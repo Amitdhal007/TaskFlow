@@ -26,7 +26,7 @@ struct HomeView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     
                     VStack {
-                        ForEach(taskViewModel.taskArray) { task in
+                        ForEach(taskViewModel.todayTask) { task in
                             NavigationLink(destination: DetailedTaskView(task: task), label: {
                                 VStack {
                                     Text(task.title)
@@ -36,16 +36,14 @@ struct HomeView: View {
                                 }
                                 .frame(maxWidth: .infinity, alignment: .topLeading)
                                 .frame(height: 120)
-                                .background(getBackgroundGradient(status: task.status))
+                                .background(getBackgroundGradient(status: Status(rawValue: task.status) ?? .pending))
                                 .edgesIgnoringSafeArea(.all)
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
                             })
                             .contextMenu {
                                 Button(action: {
-                                    if let index = taskViewModel.taskArray.firstIndex(where: { $0.id == task.id }) {
-                                        taskViewModel.taskArray.remove(at: index)
-                                    }
+                                    taskViewModel.deleteTask(id: task.id)
                                 }, label: {
                                     Text("Delete")
                                     Image(systemName: "trash")
@@ -72,7 +70,7 @@ struct HomeView: View {
                     showModal = true
                 }) {
                     Image(systemName: "plus")
-                        .foregroundColor(.purple)
+                        .foregroundColor(Color(#colorLiteral(red: 0.2196078449, green: 0.007843137719, blue: 0.8549019694, alpha: 0.8)))
                         .fontWeight(.bold)
                 })
                 .navigationTitle("Home")
@@ -80,9 +78,10 @@ struct HomeView: View {
                 .padding(.trailing, 16)
             }
             .sheet(isPresented: $showModal) {
-                AddTaskView()
+                AddTaskView(taskViewModel: taskViewModel)
             }
         }
+        .scrollIndicators(.hidden)
     }
 }
 

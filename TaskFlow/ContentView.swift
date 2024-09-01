@@ -11,7 +11,7 @@ struct ContentView: View {
     @StateObject private var userAuth: UserAuthentication = UserAuthentication()
     
     var body: some View {
-        if userAuth.isLoggedIn {
+        if UserDefaults.standard.bool(forKey: "isLoggedIn") {
             TabBarView(userAuth: userAuth)
         }
         else {

@@ -11,6 +11,8 @@ struct AddTaskView: View {
     @State private var title: String = ""
     @State private var description: String = ""
     @State private var selectedStatus: Status = .pending
+    @ObservedObject var taskViewModel: TaskViewModel
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         ZStack {
@@ -31,16 +33,16 @@ struct AddTaskView: View {
                         .cornerRadius(10)
                     
                     Picker("Select Status", selection: $selectedStatus) {
-                        Text("Pending").tag(Status.pending)
-                        Text("In Progress").tag(Status.inProgress)
-                        Text("Completed").tag(Status.completed)
+                        Text("pending").tag(Status.pending)
+                        Text("inProgress").tag(Status.inProgress)
+                        Text("completed").tag(Status.completed)
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     
                     
                     Button(action: {
-                        // Action to add the task
-                        print("Task added: \(title), \(description), \(selectedStatus)")
+                        taskViewModel.addTask(title: title, description: description, selectedStatus: selectedStatus)
+                        presentationMode.wrappedValue.dismiss()
                     }) {
                         Text("Add Task")
                             .foregroundColor(.white)
@@ -54,10 +56,11 @@ struct AddTaskView: View {
                 .padding(.horizontal)
                 .padding(.top, 40)
             }
+            .scrollIndicators(.hidden)
         }
     }
 }
 
 #Preview {
-    AddTaskView()
+    AddTaskView(taskViewModel: TaskViewModel())
 }

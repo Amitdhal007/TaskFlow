@@ -18,7 +18,7 @@ struct DetailedTaskView: View {
                         Text(task.title)
                             .font(.title)
                             .fontWeight(.bold)
-                            .foregroundColor(self.getForegroundColor(status: task.status))
+                            .foregroundColor(self.getForegroundColor(status: Status(rawValue: task.status) ?? .pending))
 
                         HStack {
                             Image(systemName: "clock")
@@ -38,7 +38,7 @@ struct DetailedTaskView: View {
                         Text("Description")
                             .font(.title2)
                             .fontWeight(.semibold)
-                            .foregroundColor(self.getForegroundColor(status: task.status))
+                            .foregroundColor(self.getForegroundColor(status: Status(rawValue: task.status) ?? .pending))
 
                         Text(task.desc)
                             .font(.body)
@@ -57,6 +57,7 @@ struct DetailedTaskView: View {
             }
             .padding(.horizontal, 16)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .scrollIndicators(.hidden)
     }
     
     func getForegroundColor(status: Status) -> Color {
@@ -71,6 +72,4 @@ struct DetailedTaskView: View {
     }
 }
 
-#Preview {
-    DetailedTaskView(task: Task(title: "Task1", desc: "Hello my name is amit", status: .completed))
-}
+

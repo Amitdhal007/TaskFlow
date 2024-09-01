@@ -7,18 +7,40 @@
 
 import Foundation
 
-struct Task: Identifiable {
-    let id: String = UUID().uuidString
-    let title: String
-    let desc: String
-    let status: Status
+struct TaskResponse: Codable {
+    let statusCode: Int?
+    let data: [Task]?
+    let message: String?
+    let success: Bool?
 }
 
-enum Status {
-    case pending
-    case inProgress
-    case completed
+struct Task: Codable, Identifiable {
+    let id, title, desc, status: String
+    let user, createdAt, updatedAt: String?
+    let v: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case title, desc, status, user, createdAt, updatedAt
+        case v = "__v"
+    }
 }
+
+enum Status: String, Codable {
+    case pending = "pending"
+    case inProgress = "inProgress"
+    case completed = "completed"
+}
+
+
+struct addTaskResponse: Codable {
+    let statusCode: Int?
+    let data: Task?
+    let message: String?
+    let success: Bool?
+}
+
+
 
 
 

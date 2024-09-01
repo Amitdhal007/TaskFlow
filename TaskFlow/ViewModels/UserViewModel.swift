@@ -9,12 +9,9 @@ import Foundation
 
 class UserAuthentication : ObservableObject {
     
-    let base_url: String = "http://localhost:5956/api/v1/"
+    let base_url: String = "http://localhost:5955/api/v1/"
     @Published var isRegistered = false
     @Published var isLoggedIn = false
-    @Published var userName: String = ""
-    @Published var email: String = ""
-    @Published var userId: String = ""
     
     func registerUser(userName: String, email: String, password: String) {
         
@@ -28,7 +25,7 @@ class UserAuthentication : ObservableObject {
         let bodyData = ["userName": userName, "email": email, "password": password]
         
         request.httpBody = try? JSONSerialization.data(withJSONObject: bodyData, options: [])
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             
@@ -75,22 +72,28 @@ class UserAuthentication : ObservableObject {
             
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                 do {
-                    if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                       let userData = jsonResponse["data"] as? [String: Any],
-                       let user = userData["user"] as? [String: Any],
-                       let accessToken = userData["accessToken"] as? String {
+                    let decodedResponse = try JSONDecoder().decode(UserResponse.self, from: data)
+
+                    if let userData = decodedResponse.data, 
+                       let accessToken = userData.accessToken,
+                       let userID = userData.user?.id,
+                       let email = userData.user?.email,
+                       let userName = userData.user?.userName{
                         
                         DispatchQueue.main.async {
-                            self.userName = user["userName"] as? String ?? ""
-                            self.email = user["email"] as? String ?? ""
-                            self.userId = user["_id"] as? String ?? ""
+                            
+                            // Save data into UserDefaults
+                            UserDefaults.standard.set(accessToken, forKey: "accessToken")
+                            UserDefaults.standard.set(userID, forKey: "userID")
+                            UserDefaults.standard.set(email, forKey: "email")
+                            UserDefaults.standard.set(userName, forKey: "userName")
+                            UserDefaults.standard.set(true, forKey: "isLoggedIn")
                             self.isLoggedIn = true
                             
-                            // save accessToken into userDefault
-                            UserDefaults.standard.set(accessToken, forKey: "accessToken")
-                            print("\(UserDefaults.standard.string(forKey: "accessToken")!)")
                         }
+                        
                     }
+                    
                 }
                 catch {
                     print("Failed to parse JSON response")
@@ -100,7 +103,7 @@ class UserAuthentication : ObservableObject {
         
     }
     
-    func logOutUser (userId: String) {
+    func logOutUser () {
         guard let url = URL(string: base_url + "users/logout") else {
             print("Invalid Logout URL")
             return
@@ -110,12 +113,12 @@ class UserAuthentication : ObservableObject {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let bodyData = ["userId": userId]
+        let bodyData = ["userId": UserDefaults.standard.string(forKey: "userID")]
         request.httpBody = try? JSONSerialization.data(withJSONObject: bodyData, options: [])
         
         // add accessToken into req header
         if let accessToken = UserDefaults.standard.string(forKey: "accessToken") {
-            request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         }
         
         URLSession.shared.dataTask(with: request) { data, response, error in
@@ -128,10 +131,12 @@ class UserAuthentication : ObservableObject {
             if let httpResponse = response as? HTTPURLResponse {
                 DispatchQueue.main.async {
                     if httpResponse.statusCode == 200 {
-                        self.isLoggedIn = false
-                        
-                        // remove from userDefaults
                         UserDefaults.standard.removeObject(forKey: "accessToken")
+                        UserDefaults.standard.removeObject(forKey: "userID")
+                        UserDefaults.standard.removeObject(forKey: "email")
+                        UserDefaults.standard.removeObject(forKey: "userName")
+                        UserDefaults.standard.set(false, forKey: "isLoggedIn")
+                        self.isLoggedIn = false
                     }
                     else {
                         print("Logout Failed with StatusCode: \(httpResponse.statusCode)")

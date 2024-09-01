@@ -39,7 +39,7 @@ struct AllTaskView: View {
                                     }
                                     .frame(maxWidth: .infinity, alignment: .topLeading)
                                     .frame(height: 120)
-                                    .background(getBackgroundGradient(status: task.status)
+                                    .background(getBackgroundGradient(status: Status(rawValue: task.status) ?? .pending)
                                         .edgesIgnoringSafeArea(.all))
                                     .foregroundColor(.white)
                                     .cornerRadius(10)
@@ -52,7 +52,7 @@ struct AllTaskView: View {
                 } else if selectedSegment == 1 {
                     ScrollView {
                         VStack {
-                            ForEach(taskViewModel.taskArray) { task in
+                            ForEach(taskViewModel.pendingTask) { task in
                                 NavigationLink(destination: DetailedTaskView(task: task), label: {
                                     VStack {
                                         Text(task.title)
@@ -75,7 +75,7 @@ struct AllTaskView: View {
                 } else {
                     ScrollView {
                         VStack {
-                            ForEach(taskViewModel.taskArray) { task in
+                            ForEach(taskViewModel.completedTask) { task in
                                 NavigationLink(destination: DetailedTaskView(task: task), label: {
                                     VStack {
                                         Text(task.title)
@@ -99,7 +99,11 @@ struct AllTaskView: View {
                 Spacer()
             }
             .navigationTitle("Tasks")
+            .onAppear {
+                taskViewModel.fetchTasks()
+            }
         }
+        .scrollIndicators(.hidden)
     }
 }
 

@@ -22,7 +22,7 @@ struct ProfileView: View {
                         .foregroundColor(.white)
                         .cornerRadius(50)
                     
-                    Text(userAuth.userName)
+                    Text(UserDefaults.standard.string(forKey: "userName") ?? "")
                         .font(.title3)
                         .fontWeight(.bold)
                     
@@ -38,7 +38,7 @@ struct ProfileView: View {
                     VStack(spacing: 15) {
                         VStack {
                             VStack {
-                                Text(userAuth.userName)
+                                Text(UserDefaults.standard.string(forKey: "userName") ?? "")
                                     .padding(.leading, 20)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -49,7 +49,7 @@ struct ProfileView: View {
                         
                         VStack {
                             VStack {
-                                Text(userAuth.email)
+                                Text(UserDefaults.standard.string(forKey: "email") ?? "")
                                     .padding(.leading, 20)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -61,7 +61,7 @@ struct ProfileView: View {
                     
                     VStack {
                         Button(action: {
-                            userAuth.logOutUser(userId: userAuth.userId)
+                            userAuth.logOutUser()
                         }, label: {
                             VStack {
                                 Text("Log Out")
